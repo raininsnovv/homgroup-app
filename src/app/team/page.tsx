@@ -114,6 +114,11 @@ export default function TeamPage() {
                                 Добавить сотрудника
                             </button>
                         )}
+                        {!session && (
+                            <div className="text-sm text-gray-500">
+                                Войдите в систему для управления командой
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -183,16 +188,20 @@ export default function TeamPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex justify-end space-x-2">
-                                                <button className="text-blue-600 hover:text-blue-900">
-                                                    <Edit className="h-4 w-4" />
-                                                </button>
-                                                {session?.user.role === 'ADMIN' && (
-                                                    <button className="text-red-600 hover:text-red-900">
-                                                        <Trash2 className="h-4 w-4" />
+                                            {session ? (
+                                                <div className="flex justify-end space-x-2">
+                                                    <button className="text-blue-600 hover:text-blue-900">
+                                                        <Edit className="h-4 w-4" />
                                                     </button>
-                                                )}
-                                            </div>
+                                                    {session.user.role === 'ADMIN' && (
+                                                        <button className="text-red-600 hover:text-red-900">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-gray-400 text-xs">Только просмотр</span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

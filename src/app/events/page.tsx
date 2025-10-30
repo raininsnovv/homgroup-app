@@ -200,8 +200,25 @@ export default function EventsPage() {
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Последние события</h2>
-                    <p className="text-gray-600">Отслеживание всех действий в системе</p>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Последние события</h2>
+                            <p className="text-gray-600">Отслеживание всех действий в системе</p>
+                        </div>
+                        <div className="flex space-x-2">
+                            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="">Все проекты</option>
+                                <option value="project1">Жилой дом на ул. Ленина, 15</option>
+                                <option value="project2">Офисное здание "Бизнес-центр"</option>
+                            </select>
+                            <select className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                <option value="">Все типы</option>
+                                <option value="PROJECT_CREATED">Создание проекта</option>
+                                <option value="STAGE_COMPLETED">Завершение этапа</option>
+                                <option value="COST_ADDED">Добавление затрат</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Events Timeline */}

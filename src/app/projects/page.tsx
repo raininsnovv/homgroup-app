@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { Building2, Plus, Eye, Edit, Calendar, DollarSign, User } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface Project {
     id: string
@@ -37,6 +38,7 @@ interface WorkStage {
 
 export default function ProjectsPage() {
     const { data: session } = useSession()
+    const router = useRouter()
     const [projects, setProjects] = useState<Project[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
@@ -145,28 +147,6 @@ export default function ProjectsPage() {
         }
     }
 
-    const getStageTypeLabel = (type: string) => {
-        switch (type) {
-            case 'FOUNDATION': return 'Фундамент'
-            case 'WALLS': return 'Стены'
-            case 'ROOF': return 'Кровля'
-            case 'ELECTRICAL': return 'Электромонтаж'
-            case 'PLUMBING': return 'Сантехника'
-            case 'FINISHING': return 'Отделка'
-            case 'LANDSCAPING': return 'Благоустройство'
-            case 'OTHER': return 'Прочее'
-            default: return type
-        }
-    }
-
-    const formatCurrency = (amount?: number) => {
-        if (!amount) return '-'
-        return new Intl.NumberFormat('ru-RU', {
-            style: 'currency',
-            currency: 'RUB',
-            minimumFractionDigits: 0
-        }).format(amount)
-    }
 
     if (isLoading) {
         return (
@@ -204,109 +184,108 @@ export default function ProjectsPage() {
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">Объекты и заказчики</h2>
                             <p className="text-gray-600">Управление проектами, этапами работ и затратами</p>
                         </div>
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center">
-                            <Plus className="h-4 w-4 mr-2" />
-                            Добавить проект
-                        </button>
+                        {session ? (
+                            <Link
+                                href="/projects/new"
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Добавить проект
+                            </Link>
+                        ) : (
+                            <div className="text-sm text-gray-500">
+                                Войдите в систему для управления проектами
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Projects List */}
-                <div className="space-y-6">
-                    {projects.map((project) => (
-                        <div key={project.id} className="bg-white rounded-lg shadow-sm border overflow-hidden">
-                            {/* Project Header */}
-                            <div className="px-6 py-4 border-b border-gray-200">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                                            {project.name}
-                                        </h3>
-                                        <p className="text-gray-600 text-sm mb-2">{project.address}</p>
-                                        {project.description && (
-                                            <p className="text-gray-500 text-sm">{project.description}</p>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center space-x-3">
-                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(project.status)}`}>
-                                            {getStatusLabel(project.status)}
-                                        </span>
-                                        <div className="flex space-x-2">
-                                            <button className="text-blue-600 hover:text-blue-900">
-                                                <Eye className="h-4 w-4" />
-                                            </button>
-                                            <button className="text-gray-600 hover:text-gray-900">
-                                                <Edit className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Project Details */}
-                            <div className="px-6 py-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                                    <div className="flex items-center text-sm text-gray-600">
-                                        <Calendar className="h-4 w-4 mr-2" />
-                                        <span>
-                                            {project.startDate ? new Date(project.startDate).toLocaleDateString('ru-RU') : 'Не указано'} -
-                                            {project.endDate ? new Date(project.endDate).toLocaleDateString('ru-RU') : 'Не указано'}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center text-sm text-gray-600">
-                                        <DollarSign className="h-4 w-4 mr-2" />
-                                        <span>Бюджет: {formatCurrency(project.budget)}</span>
-                                    </div>
-                                    <div className="flex items-center text-sm text-gray-600">
-                                        <User className="h-4 w-4 mr-2" />
-                                        <span>Заказчик: {project.customer.name}</span>
-                                    </div>
-                                    <div className="flex items-center text-sm text-gray-600">
-                                        <User className="h-4 w-4 mr-2" />
-                                        <span>Ответственный: {project.manager?.name || 'Не назначен'}</span>
-                                    </div>
-                                </div>
-
-                                {/* Work Stages */}
-                                <div>
-                                    <h4 className="text-sm font-medium text-gray-900 mb-3">Этапы работ</h4>
-                                    <div className="space-y-2">
-                                        {project.workStages.map((stage) => (
-                                            <div key={stage.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center justify-between mb-1">
-                                                        <span className="text-sm font-medium text-gray-900">
-                                                            {stage.name}
-                                                        </span>
-                                                        <span className="text-xs text-gray-500">
-                                                            {getStageTypeLabel(stage.stageType)}
-                                                        </span>
+                <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Проект
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Адрес
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Ответственный
+                                    </th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Статус
+                                    </th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Действия
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {projects.map((project) => (
+                                    <tr
+                                        key={project.id}
+                                        className="hover:bg-gray-50 cursor-pointer"
+                                        onClick={() => router.push(`/projects/${project.id}`)}
+                                    >
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <Building2 className="h-8 w-8 text-blue-600 mr-3" />
+                                                <div>
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {project.name}
                                                     </div>
-                                                    <div className="flex items-center space-x-4 text-xs text-gray-600">
-                                                        <span>Прогресс: {stage.progress}%</span>
-                                                        <span>Планируемо: {formatCurrency(stage.plannedCost)}</span>
-                                                        <span>Фактически: {formatCurrency(stage.actualCost)}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="w-16 bg-gray-200 rounded-full h-2">
-                                                        <div
-                                                            className="bg-blue-600 h-2 rounded-full"
-                                                            style={{ width: `${stage.progress}%` }}
-                                                        ></div>
-                                                    </div>
+                                                    {project.description && (
+                                                        <div className="text-sm text-gray-500">
+                                                            {project.description}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">{project.address}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">
+                                                {project.manager?.name || 'Не назначен'}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(project.status)}`}>
+                                                {getStatusLabel(project.status)}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <div
+                                                className="flex justify-end space-x-2"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <Link
+                                                    href={`/projects/${project.id}`}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                    title="Подробнее"
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Link>
+                                                {session && (
+                                                    <button className="text-gray-600 hover:text-gray-900">
+                                                        <Edit className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 {/* Stats */}
-                <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white rounded-lg shadow-sm border p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Всего проектов</h3>
                         <p className="text-3xl font-bold text-blue-600">{projects.length}</p>
@@ -323,13 +302,6 @@ export default function ProjectsPage() {
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">Завершенных</h3>
                         <p className="text-3xl font-bold text-purple-600">
                             {projects.filter(p => p.status === 'COMPLETED').length}
-                        </p>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow-sm border p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Общий бюджет</h3>
-                        <p className="text-3xl font-bold text-orange-600">
-                            {formatCurrency(projects.reduce((sum, p) => sum + (p.budget || 0), 0))}
                         </p>
                     </div>
                 </div>

@@ -1,39 +1,11 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { Building2, Users, FileText, Calendar } from 'lucide-react'
+import { Building2, Users, FileText, Calendar, LogIn, UserPlus, LogOut } from 'lucide-react'
 
 export default function Home() {
   const { data: session, status } = useSession()
-
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
-
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-          <div className="text-center">
-            <Building2 className="mx-auto h-12 w-12 text-blue-600 mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">HomGroup</h1>
-            <p className="text-gray-600 mb-6">Система управления строительными проектами</p>
-            <Link
-              href="/auth/signin"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Войти в систему
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -46,13 +18,41 @@ export default function Home() {
               <h1 className="text-xl font-semibold text-gray-900">HomGroup</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Добро пожаловать, {session.user.name}
-              </span>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {session.user.role === 'ADMIN' ? 'Администратор' :
-                  session.user.role === 'MANAGER' ? 'Менеджер' : 'Сотрудник'}
-              </span>
+              {session ? (
+                <>
+                  <span className="text-sm text-gray-600">
+                    Добро пожаловать, {session.user.name}
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    {session.user.role === 'ADMIN' ? 'Администратор' :
+                      session.user.role === 'MANAGER' ? 'Менеджер' : 'Сотрудник'}
+                  </span>
+                  <button
+                    onClick={() => signOut()}
+                    className="flex items-center text-red-600 hover:text-red-700 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Выйти
+                  </button>
+                </>
+              ) : (
+                <div className="flex items-center space-x-4">
+                  <Link
+                    href="/auth/signin"
+                    className="flex items-center text-blue-600 hover:text-blue-700"
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Войти
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="flex items-center bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Регистрация
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -66,14 +66,16 @@ export default function Home() {
         </div>
 
         {/* Navigation Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link
             href="/team"
             className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow"
           >
             <Users className="h-8 w-8 text-blue-600 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Команда</h3>
-            <p className="text-gray-600 text-sm">Управление сотрудниками и их ролями</p>
+            <p className="text-gray-600 text-sm">
+              {session ? 'Управление сотрудниками и их ролями' : 'Просмотр команды'}
+            </p>
           </Link>
 
           <Link
@@ -82,16 +84,9 @@ export default function Home() {
           >
             <Building2 className="h-8 w-8 text-green-600 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Проекты</h3>
-            <p className="text-gray-600 text-sm">Заказчики, объекты и этапы работ</p>
-          </Link>
-
-          <Link
-            href="/work-log"
-            className="bg-white rounded-lg shadow-sm border p-6 hover:shadow-md transition-shadow"
-          >
-            <FileText className="h-8 w-8 text-purple-600 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Журнал работ</h3>
-            <p className="text-gray-600 text-sm">Учет затрат и времени по этапам</p>
+            <p className="text-gray-600 text-sm">
+              {session ? 'Заказчики, объекты и этапы работ' : 'Просмотр проектов'}
+            </p>
           </Link>
 
           <Link
@@ -100,7 +95,9 @@ export default function Home() {
           >
             <Calendar className="h-8 w-8 text-orange-600 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Журнал событий</h3>
-            <p className="text-gray-600 text-sm">Последние действия и обновления</p>
+            <p className="text-gray-600 text-sm">
+              {session ? 'Последние действия и обновления' : 'Просмотр событий'}
+            </p>
           </Link>
         </div>
 
@@ -108,7 +105,7 @@ export default function Home() {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Активные проекты</h3>
-            <p className="text-3xl font-bold text-blue-600">0</p>
+            <p className="text-3xl font-bold text-blue-600">2</p>
             <p className="text-sm text-gray-600">В работе</p>
           </div>
 
@@ -120,7 +117,7 @@ export default function Home() {
 
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Команда</h3>
-            <p className="text-3xl font-bold text-purple-600">0</p>
+            <p className="text-3xl font-bold text-purple-600">3</p>
             <p className="text-sm text-gray-600">Сотрудников</p>
           </div>
         </div>

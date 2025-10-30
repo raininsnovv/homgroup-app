@@ -16,27 +16,30 @@ export const authOptions: NextAuthOptions = {
                     return null
                 }
 
-                const user = await prisma.user.findUnique({
-                    where: {
-                        email: credentials.email
+                try {
+                    // Сначала ищем пользователя в базе данных
+                    const dbUser = await prisma.user.findUnique({
+                        where: { email: credentials.email }
+                    })
+
+                    if (dbUser) {
+                        // Проверяем пароль из базы данных
+                        const isValidPassword = await bcrypt.compare(credentials.password, dbUser.password)
+
+                        if (isValidPassword) {
+                            return {
+                                id: dbUser.id,
+                                email: dbUser.email,
+                                name: dbUser.name,
+                                role: dbUser.role,
+                            }
+                        }
                     }
-                })
 
-                if (!user || !user.isActive) {
                     return null
-                }
-
-                // Для демонстрации - в реальном проекте пароли должны быть хешированы
-                // const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-                // if (!isPasswordValid) {
-                //   return null
-                // }
-
-                return {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name,
-                    role: user.role,
+                } catch (error) {
+                    console.error('Auth error:', error)
+                    return null
                 }
             }
         })
